@@ -1,0 +1,64 @@
+Atlas atlas-250mg5-shard-0 [primary] cafeDB>
+
+Atlas atlas-250mg5-shard-0 [primary] cafeDB> db.orders.insertMany([
+|   { _id: 1, customer: "Meena", item: "Coffee", qty: 2, price: 120, status: "delivered" },
+|   { _id: 2, customer: "Ravi", item: "Sandwich", qty: 1, price: 180, status: "delivered" },
+|   { _id: 3, customer: "Meena", item: "Sandwich", qty: 2, price: 180, status: "cancelled" },
+|   { _id: 4, customer: "Karthik", item: "Coffee", qty: 3, price: 120, status: "delivered" },
+|   { _id: 5, customer: "Ravi", item: "Coffee", qty: 1, price: 120, status: "delivered" },
+|   { _id: 6, customer: "Meena", item: "Cake", qty: 1, price: 250, status: "delivered" },
+|   { _id: 7, customer: "Karthik", item: "Cake", qty: 2, price: 250, status: "pending" }
+| ])
+Uncaught:
+
+Atlas atlas-250mg5-shard-0 [primary] cafeDB> db.orders.aggregate([
+|   { $match: { status: "delivered" } },
+|   { $project: { _id: 0, customer: 1, item: 1, qty: 1 } }
+| ])
+[
+  { customer: 'Meena', item: 'Coffee', qty: 2 },
+  { customer: 'Ravi', item: 'Sandwich', qty: 1 },
+  { customer: 'Karthik', item: 'Coffee', qty: 3 },
+  { customer: 'Ravi', item: 'Coffee', qty: 1 },
+  { customer: 'Meena', item: 'Cake', qty: 1 }
+]
+Atlas atlas-250mg5-shard-0 [primary] cafeDB> db.orders.aggregate([
+|   { $match: { status: "delivered" } },
+|   { $group: {
+|       _id: "$item",
+|       totalQty: { $sum: "$qty" },
+|       revenue: { $sum: { $multiply: ["$qty", "$price"] } }
+|   }},
+|   { $sort: { revenue: -1 } }
+| ])
+[
+  { _id: 'Coffee', totalQty: 6, revenue: 720 },
+  { _id: 'Cake', totalQty: 1, revenue: 250 },
+  { _id: 'Sandwich', totalQty: 1, revenue: 180 }
+]
+Atlas atlas-250mg5-shard-0 [primary] cafeDB> db.orders.aggregate([
+|   { $match: { status: "delivered" } },
+|   { $group: {
+|       _id: "$customer",
+|       orders: { $sum: 1 },
+|       totalSpend: { $sum: { $multiply: ["$qty", "$price"] } }
+|   }},
+|   { $project: { _id: 0, customer: "$_id", orders: 1, totalSpend: 1 } },
+|   { $sort: { totalSpend: -1 } }
+| ])
+[
+  { orders: 2, totalSpend: 490, customer: 'Meena' },
+  { orders: 1, totalSpend: 360, customer: 'Karthik' },
+  { orders: 2, totalSpend: 300, customer: 'Ravi' }
+]
+Atlas atlas-250mg5-shard-0 [primary] cafeDB> db.orders.aggregate([
+|   { $match: { status: "delivered" } },
+|   { $group: {
+|       _id: "$customer",
+|       totalSpend: { $sum: { $multiply: ["$qty", "$price"] } }
+|   }},
+|   { $sort: { totalSpend: -1 } },
+|   { $limit: 1 }
+| ])
+[ { _id: 'Meena', totalSpend: 490 } ]
+Atlas atlas-250mg5-shard-0 [primary] cafeDB>
