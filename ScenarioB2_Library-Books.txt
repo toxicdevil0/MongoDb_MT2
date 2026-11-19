@@ -1,0 +1,120 @@
+C:\Users\student -08>mongosh "mongodb+srv://cluster0.w9ksbcz.mongodb.net/" --apiVersion 1 --username prajapatritik73_db_user
+Enter password: ***************
+Current Mongosh Log ID: 6afea864f79d594879dd97c7
+Connecting to:          mongodb+srv://<credentials>@cluster0.w9ksbcz.mongodb.net/?appName=mongosh+2.14.2
+Using MongoDB:          8.0.37 (API Version 1)
+Using Mongosh:          2.14.2
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+Atlas atlas-250mg5-shard-0 [primary] test> use libraryDB
+switched to db libraryDB
+Atlas atlas-250mg5-shard-0 [primary] libraryDB>
+
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.insertMany([
+|   { _id: 1, title: "Database Systems", author: "Elmasri", copies: 5, status: "available" },
+|   { _id: 2, title: "Operating Systems", author: "Galvin", copies: 3, status: "available" },
+|   { _id: 3, title: "Computer Networks", author: "Tanenbaum", copies: 0, status: "unavailable" },
+|   { _id: 4, title: "Old Almanac 1990", author: "Unknown", copies: 0, status: "unavailable" },
+|   { _id: 5, title: "Torn Notes", author: "Unknown", copies: 0, status: "damaged" },
+|   { _id: 6, title: "Water-damaged Atlas", author: "Unknown", copies: 1, status: "damaged" }
+| ])
+{
+  acknowledged: true,
+  insertedIds: { '0': 1, '1': 2, '2': 3, '3': 4, '4': 5, '5': 6 }
+}
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.updateOne(
+|   { title: "Operating Systems" },
+|   { $inc: { copies: 2 } }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.updateOne(
+|   { title: "Database Systems" },
+|   { $inc: { copies: -1 } }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> // Run this exact command twice
+
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.updateOne(
+|   { title: "Artificial Intelligence" },
+|   { $set: { author: "Russell", copies: 4, status: "available" } },
+|   { upsert: true }
+| )
+{
+  acknowledged: true,
+  insertedId: ObjectId('6afea8824140d02b2dfc5b72'),
+  matchedCount: 0,
+  modifiedCount: 0,
+  upsertedCount: 1
+}
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> // Run this exact command twice
+
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.updateOne(
+|   { title: "Artificial Intelligence" },
+|   { $set: { author: "Russell", copies: 4, status: "available" } },
+|   { upsert: true }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 0,
+  upsertedCount: 0
+}
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.updateOne(
+|   { title: "Computer Networks" },
+|   {
+|     $set: { status: "available" },
+|     $inc: { copies: 3 }
+|   }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.deleteOne(
+|   { title: "Old Almanac 1990" }
+| )
+{ acknowledged: true, deletedCount: 1 }
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.deleteMany(
+|   { status: { $in: ["damaged", "lost"] } }
+| )db.books.deleteMany(
+Uncaught:
+SyntaxError: Missing semicolon. (3:1)
+
+  1 | db.books.deleteMany(
+  2 |   { status: { $in: ["damaged", "lost"] } }
+> 3 | )db.books.deleteMany(
+    |  ^
+  4 |
+
+Atlas atlas-250mg5-shard-0 [primary] libraryDB>   { status: { $in: ["damaged", "lost"] } }
+[ 'damaged', 'lost' ]
+Atlas atlas-250mg5-shard-0 [primary] libraryDB> db.books.find(
+|   {},
+|   { _id: 0, title: 1, copies: 1 }
+| ).sort({ title: 1 })
+[
+  { title: 'Artificial Intelligence', copies: 4 },
+  { title: 'Computer Networks', copies: 3 },
+  { title: 'Database Systems', copies: 4 },
+  { title: 'Operating Systems', copies: 5 },
+  { title: 'Torn Notes', copies: 0 },
+  { title: 'Water-damaged Atlas', copies: 1 }
+]
+Atlas atlas-250mg5-shard-0 [primary] libraryDB>
